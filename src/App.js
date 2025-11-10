@@ -8,6 +8,7 @@ import Contact from './Contact';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 //import storeWithThunk from "./ReduxWithThunk/StoreWithThunk";
 import Symbols from './Symbols';
+import SymbolsWithBearerAuth from './SymbolsWithBearerAuth';
 import store from './Redux/store';
 import { Provider } from "react-redux";
 
@@ -20,7 +21,7 @@ const App = () => {
             <Route path= '/home' element = {<Home />} />
             <Route path= '/aboutus' element = {<About />} />
             <Route path= '/contactus' element = {<Contact />} />
-            <Route path= '/symbols' element = {< Symbols />} />  
+            <Route path= '/symbols' element = {<SymbolsWithBearerAuth />} />  
         </Routes>
       </Router>
     </Provider>
