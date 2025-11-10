@@ -1,19 +1,23 @@
 import  {useEffect, useState, useMemo} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchSymbolsRequest, fetchSymbolsSuccess, fetchSymbolsFailure} from "./Redux/Action";
 import './selStyle.css';
 
-const Symbols = () => {
+const SymbolsWithRedux = () => {
+    const dispatch= useDispatch();
     const symbolEndpoint = process.env.REACT_APP_API_SYMBOLS_URL;
     const userName = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
 
     const token = btoa(`${userName}:${password}`);
-    const [ symbols, setSymbols ] = useState([]);
+    const { symbols } = useSelector((state)=> state.symbols);
     const [symbolMetadata, setSymbolMetadata] = useState([]);
     const [liveSymbols, setLiveSymbols] = useState([]);
     const [sortConfig, setSortConfig] = useState({ key: "symbolName", direction: "asc" });
 
     // Fetch all symbols metadata
     const fetchSymbolsData = async()=>{
+        dispatch(fetchSymbolsRequest());
         try{
             const response = await fetch(`${symbolEndpoint}?filter=SystemTags&sort=asc`, {
                 method: "GET",
@@ -29,9 +33,10 @@ const Symbols = () => {
             }
 
             const data = await response.json();
-            setSymbols(data);
+            dispatch(fetchSymbolsSuccess(data));
+
         }catch(error) {
-            throw new Error (`HTTP Error : ${error.message}`);
+            dispatch(fetchSymbolsFailure(error.message));
         };
     }
 
@@ -161,4 +166,4 @@ const Symbols = () => {
 
 }
 
-export default Symbols;
+export default SymbolsWithRedux;
