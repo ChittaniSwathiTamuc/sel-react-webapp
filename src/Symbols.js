@@ -11,6 +11,7 @@ const Symbols = () => {
     const [symbolMetadata, setSymbolMetadata] = useState([]);
     const [liveSymbols, setLiveSymbols] = useState([]);
     const [sortConfig, setSortConfig] = useState({ key: "symbolName", direction: "asc" });
+    const [error, setError] = useState(null);
 
     // Fetch all symbols metadata
     const fetchSymbolsData = async()=>{
@@ -26,6 +27,7 @@ const Symbols = () => {
 
             if(!response.ok) {
                 console.warn(`HTTP Error: ${response.status}`);
+                setError(`Failed to load symbol list (status ${response.status})`);
                 return;
             }
 
@@ -33,7 +35,7 @@ const Symbols = () => {
             setSymbols(data);
         }catch(error) {
             console.warn(`HTTP Error: ${error.message}`);
-            //throw new Error(`HTTP Error: ${error.message}`);
+            setError(`Failed to load symbol list: ${error.message}`);
         };
     }
 
@@ -84,7 +86,7 @@ const Symbols = () => {
           setLiveSymbols(results.filter(Boolean));
 
       } catch(error) {
-        throw new Error(`Error Occurred:${error.message}`);
+        setError(`Failed to load symbol details: ${error.message || error}`);
       }
     }
 
@@ -121,10 +123,24 @@ const Symbols = () => {
     });
   }, [liveSymbols, sortConfig]);
 
+  const handleRetry = () => {
+    setError(null);
+    fetchSymbolsData();
+  };
+
   // 🟢 Minimal UI
    return (
     <div className="container">
       <h2>📋 Live Symbol Data</h2>
+
+      {error && (
+        <div style={{ marginBottom: 12, color: "red" }} role="alert">
+          <strong>Error:</strong> {error}{" "}
+          <button onClick={handleRetry} style={{ marginLeft: 8 }}>
+            Retry
+          </button>
+        </div>
+      )}
 
       {sorted.length === 0 ? (
         <p>Loading...</p>
