@@ -1,4 +1,3 @@
-import Tabs from './Tabs';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Symbols from './Symbols';
 import SymbolsWithBearerAuth from './SymbolsWithBearerAuth';

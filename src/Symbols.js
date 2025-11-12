@@ -25,13 +25,15 @@ const Symbols = () => {
             });
 
             if(!response.ok) {
-                throw new Error (`HTTP Error : ${response.status}`)
+                console.warn(`HTTP Error: ${response.status}`);
+                return;
             }
 
             const data = await response.json();
             setSymbols(data);
         }catch(error) {
-            throw new Error (`HTTP Error : ${error.message}`);
+            console.warn(`HTTP Error: ${error.message}`);
+            //throw new Error(`HTTP Error: ${error.message}`);
         };
     }
 
@@ -52,38 +54,39 @@ const Symbols = () => {
         }
     },[symbols]);
 
-    // Fetch real-time symbol values
     const fetchSymbolDetails = async() => {
-        const updatedList = [];
-        if (!symbolMetadata || symbolMetadata.length === 0) return;
-        for(const symbol of symbolMetadata){
-            try{
-                const responseData = await fetch(`${symbolEndpoint}/${symbol.symbolName}`, {
-                    method : "GET",
-                    headers: {
-                        "Authorization": `Basic ${token}`,
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    }
-                });
-                if (!responseData.ok) continue;
-                const symboldata = await responseData.json();
-                updatedList.push({
-                    symbolName: symbol.symbolName,
-                    description: symbol.description,
-                    type: symbol.type,
-                    stVal: symboldata.stVal,
-                    t: symboldata.t
-                });
+      if(!symbolMetadata || symbolMetadata.length === 0 ) return;
+      try {
+        const fetchPromises = symbolMetadata.map((symbol)=>
+          fetch(`${symbolEndpoint}/${symbol.symbolName}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Basic ${token}`,
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            }
+          }).then(async response => {
+            if(!response.ok) return null;
+            const data = await response.json();
+            return {
+              symbolName: symbol.symbolName,
+              description: symbol.description,
+              type: symbol.type,
+              stVal: data.stVal,
+              t: data.t
+            }
+          }).catch(error => {
+            console.warn(`⚠️ Skipped ${symbol.symbolName} — invalid json`);
+          })
+        )
 
-            }
-            catch(error){
-                console.warn(`⚠️ Skipped ${symbol.symbolName} — invalid json`);
-                continue;
-            }
-        }
-        setLiveSymbols(updatedList);
-    };
+        const results = await Promise.all(fetchPromises);
+          setLiveSymbols(results.filter(Boolean));
+
+      } catch(error) {
+        throw new Error(`Error Occurred:${error.message}`);
+      }
+    }
 
      // Auto-refresh symbol values every 2 seconds
     useEffect(()=> {
