@@ -35,3 +35,7 @@
 .symbol-table tr:hover {
   background-color: #e8f0ff;
 }
+
+.table-sno {
+  width: 200px;
+}

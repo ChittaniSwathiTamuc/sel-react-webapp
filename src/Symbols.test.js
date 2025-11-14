@@ -20,9 +20,9 @@ describe("🧪 Symbols Component Tests", () => {
           ok: true,
           json: () =>
             Promise.resolve([
-              { symbolName: "SYM1", description: "Symbol One", type: "INS" },
-              { symbolName: "SYM2", description: "Symbol Two", type: "INS" },
-              { symbolName: "SYM3", description: "Symbol Three", type: "OTH" },
+              { Name: "SYM1", Type: "INS", TASK : "DEV" },
+              { Name: "SYM2", Type: "INS", TASK: "TEST" },
+              { Name: "SYM3", Type: "OTH", TASK: "OTHER" },
             ]),
         });
       }
@@ -96,8 +96,8 @@ describe("🧪 Symbols Component Tests", () => {
           ok: true,
           json: () =>
             Promise.resolve([
-              { symbolName: "A", description: "Alpha", type: "INS" },
-              { symbolName: "B", description: "Beta", type: "INS" },
+              { NAME: "A", TASK: "Alpha", TYPE: "INS" },
+              { NAME: "B", TEST: "Beta", TYPE: "INS" },
             ]),
         });
       }

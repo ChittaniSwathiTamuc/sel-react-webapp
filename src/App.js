@@ -10,7 +10,8 @@ const App = () => {
     <Provider store={store}>
       <Router>
         <Routes>
-            <Route path= '/' element = {<Symbols />} />  
+            <Route path= '/' element = {<Symbols />} />
+            <Route path= '/SymbolsChart' element = {<SymbolsChart />} />   
         </Routes>
       </Router>
     </Provider>

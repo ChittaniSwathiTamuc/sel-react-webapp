@@ -1,8 +1,11 @@
 import  {useEffect, useState, useMemo} from 'react';
+import { useNavigate } from "react-router-dom";
 import './selStyle.css';
 
 const Symbols = () => {
-    const symbolEndpoint = process.env.REACT_APP_API_SYMBOLS_URL;
+    //const symbolEndpoint = process.env.REACT_APP_API_SYMBOLS_URL;
+    const navigate = useNavigate();
+    const symbolEndpoint = process.env.REACT_APP_API_SYMBOLS_SEL_URL;
     const userName = process.env.REACT_APP_USERNAME;
     const password = process.env.REACT_APP_PASSWORD;
 
@@ -10,13 +13,13 @@ const Symbols = () => {
     const [ symbols, setSymbols ] = useState([]);
     const [symbolMetadata, setSymbolMetadata] = useState([]);
     const [liveSymbols, setLiveSymbols] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: "symbolName", direction: "asc" });
+    const [sortConfig, setSortConfig] = useState({ key: "Name", direction: "asc" });
     const [error, setError] = useState(null);
 
     // Fetch all symbols metadata
     const fetchSymbolsData = async()=>{
         try{
-            const response = await fetch(`${symbolEndpoint}?filter=SystemTags&sort=asc`, {
+            const response = await fetch(`${symbolEndpoint}?filter=SystemTags*&sort=asc`, {
                 method: "GET",
                 headers: {
                     "Authorization" : `Basic ${token}`,
@@ -33,6 +36,7 @@ const Symbols = () => {
 
             const data = await response.json();
             setSymbols(data);
+            console.log("swadata", data);
         }catch(error) {
             console.warn(`HTTP Error: ${error.message}`);
             setError(`Failed to load symbol list: ${error.message}`);
@@ -46,21 +50,23 @@ const Symbols = () => {
     // Filter symbols (only type 'INS')
     useEffect(()=>{
         if(symbols && symbols.length >0 ) {
-            const filteredSymbols = symbols.filter((symbol)=> symbol.type === 'INS')
+            const filteredSymbols = symbols.filter((symbol)=> symbol.Type === 'INS')
             .map((item)=>({
-                symbolName: item.symbolName,
-                description: item.description,
-                type: item.type
+                Name: item.Name,
+                Type: item.Type,
+                Task: item.Task
             }));
+            console.log("swafilterdSymbols:", filteredSymbols);
             setSymbolMetadata(filteredSymbols);
         }
     },[symbols]);
 
+    //Parallel calls for all the symbols to get their details
     const fetchSymbolDetails = async() => {
       if(!symbolMetadata || symbolMetadata.length === 0 ) return;
       try {
         const fetchPromises = symbolMetadata.map((symbol)=>
-          fetch(`${symbolEndpoint}/${symbol.symbolName}`, {
+          fetch(`${symbolEndpoint}/${symbol.Name}`, {
             method: "GET",
             headers: {
               "Authorization": `Basic ${token}`,
@@ -71,11 +77,10 @@ const Symbols = () => {
             if(!response.ok) return null;
             const data = await response.json();
             return {
-              symbolName: symbol.symbolName,
-              description: symbol.description,
-              type: symbol.type,
+              Name: symbol.Name,
+              Type: symbol.type,
               stVal: data.stVal,
-              t: data.t
+              t: data.t.value
             }
           }).catch(error => {
             console.warn(`⚠️ Skipped ${symbol.symbolName} — invalid json`);
@@ -131,6 +136,12 @@ const Symbols = () => {
   // 🟢 Minimal UI
    return (
     <div className="container">
+       <button 
+        onClick={() => navigate("/SymbolsChart")}
+        style={{ marginBottom: 20 }}
+      >
+        Go to Chart View
+      </button>
       <h2>📋 Live Symbol Data</h2>
 
       {error && (
@@ -148,11 +159,9 @@ const Symbols = () => {
         <table className="symbol-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort("symbolName")}>
-                Symbol Name {getSortArrow("symbolName")}
-              </th>
-              <th onClick={() => handleSort("description")}>
-                Description {getSortArrow("description")}
+              <th className="table-sno">SNo</th>
+              <th onClick={() => handleSort("Name")}>
+                Name {getSortArrow("Name")}
               </th>
               <th onClick={() => handleSort("stVal")}>
                 Value {getSortArrow("stVal")}
@@ -164,10 +173,10 @@ const Symbols = () => {
           </thead>
 
           <tbody>
-            {sorted.map((s) => (
-              <tr key={s.symbolName}>
-                <td>{s.symbolName}</td>
-                <td>{s.description}</td>
+            {sorted.map((s, index) => (
+              <tr key={s.Name}>
+                <td>{index + 1}</td>
+                <td>{s.Name}</td>
                 <td>{s.stVal}</td>
                 <td>{new Date(s.t).toLocaleString()}</td>
               </tr>
